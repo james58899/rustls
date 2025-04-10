@@ -121,9 +121,9 @@ impl RsaSigningKey {
 
 impl SigningKey for RsaSigningKey {
     fn choose_scheme(&self, offered: &[SignatureScheme]) -> Option<Box<dyn Signer>> {
-        ALL_RSA_SCHEMES
+        offered
             .iter()
-            .find(|scheme| offered.contains(scheme))
+            .find(|scheme| ALL_RSA_SCHEMES.contains(scheme))
             .map(|scheme| RsaSigner::new(Arc::clone(&self.key), *scheme))
     }
 
