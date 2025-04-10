@@ -590,7 +590,39 @@ impl ExpectClientHello {
         // and continue to send HandshakeFailure.
 
         let suite = if self.config.ignore_client_order {
-            suitable_suites_iter.find(|suite| client_suites.contains(&suite.suite()))
+            let chacha_suites = [
+                CipherSuite::TLS13_CHACHA20_POLY1305_SHA256,
+                CipherSuite::TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
+                CipherSuite::TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
+            ];
+            if self.config.prioritize_chacha
+                && client_suites
+                    .first()
+                    .iter()
+                    .any(|suite| chacha_suites.contains(suite))
+            {
+                let suitable_suites = suitable_suites_iter.collect::<Vec<_>>();
+                let mut prioritized_suites: Vec<&SupportedCipherSuite> =
+                    Vec::with_capacity(suitable_suites.len());
+                // Add ChaCha20 first
+                prioritized_suites.extend(
+                    suitable_suites
+                        .iter()
+                        .filter(|suite| chacha_suites.contains(&suite.suite())),
+                );
+                // Add the rest
+                prioritized_suites.extend(
+                    suitable_suites
+                        .iter()
+                        .filter(|suite| !chacha_suites.contains(&suite.suite())),
+                );
+
+                prioritized_suites
+                    .into_iter()
+                    .find(|suite| client_suites.contains(&suite.suite()))
+            } else {
+                suitable_suites_iter.find(|suite| client_suites.contains(&suite.suite()))
+            }
         } else {
             let suitable_suites = suitable_suites_iter.collect::<Vec<_>>();
             client_suites

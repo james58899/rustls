@@ -279,6 +279,13 @@ pub struct ServerConfig {
     /// which is supported by the client.
     pub ignore_client_order: bool,
 
+    /// prioritize ChaCha20-Poly1305 ciphers to the top of the server cipher list
+    /// if a ChaCha20-Poly1305 cipher is at the top of the client cipher list.
+    /// This helps those clients (e.g. mobile) use ChaCha20-Poly1305 if
+    /// that cipher is anywhere in the server cipher list; but still allows
+    /// other clients to use AES and other ciphers.
+    pub prioritize_chacha: bool,
+
     /// The maximum size of plaintext input to be emitted in a single TLS record.
     /// A value of None is equivalent to the [TLS maximum] of 16 kB.
     ///
