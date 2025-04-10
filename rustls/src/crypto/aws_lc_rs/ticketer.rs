@@ -203,7 +203,7 @@ impl ProducesTickets for Rfc5077Ticketer {
             .algorithm()
             .digest_algorithm()
             .output_len();
-        let (enc_state, mac) = try_split_at(ciphertext, ciphertext.len() - tag_len)?;
+        let (enc_state, mac) = try_split_at(ciphertext, ciphertext.len().saturating_sub(tag_len))?;
 
         // Reconstitute the HMAC data to verify the tag.
         let mut hmac_data =
